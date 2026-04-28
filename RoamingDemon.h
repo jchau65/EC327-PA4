@@ -32,7 +32,7 @@ class RoamingDemon : public GameObject {
          * Constructor for RoamingDemon.
          */
         RoamingDemon(const string name, const double attack, const double health, 
-                     const bool variant, const int id, Point2D& in_loc);
+                     const bool variant, const int id, const Point2D& in_loc);
 
         /**
          * Follows a mage.

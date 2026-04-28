@@ -1,14 +1,17 @@
 #include "RoamingDemon.h"
 
+#include <random>
+
 using namespace std;
 
 RoamingDemon::RoamingDemon(const string name, const double attack, const double health,
-    const bool variant, const int id, Point2D& in_loc) : 
+    const bool variant, const int id, const Point2D& in_loc) : 
         attack(attack),
         health(health),
         variant(variant),
-        in_combat(in_combat),
+        in_combat(false),
         name(name),
+        current_mage(nullptr),
         GameObject(in_loc, id, 'W') {}
 
 void RoamingDemon::follow(Mage* m) {
@@ -44,7 +47,16 @@ bool RoamingDemon::Update() {
         return true;
     }
 
+    // If the demon is just in environment, move randomly
     state = IN_ENVIRONMENT;
+
+    // Set up random number generator
+    static random_device rd;
+    static mt19937 gen(rd());
+    static uniform_int_distribution<> distrib(-2, 2);
+
+    // Move in both directions in random numbers
+    location = location + Vector2D(distrib(gen), distrib(gen));
     return false;
 }
 
@@ -66,5 +78,8 @@ bool RoamingDemon::IsAlive() const {
 }
 
 bool RoamingDemon::ShouldBeVisible() const {
+    if (!IsAlive()) {
+        return false;
+    }
     return true;
 }

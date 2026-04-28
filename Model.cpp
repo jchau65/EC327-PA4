@@ -43,7 +43,7 @@ Model::Model() : time(0), num_objects(8), num_mages(2), num_spires(2), num_hideo
     hideout_ptrs[1] = d2;
 
     // Create new RoamingDemons
-    RoamingDemon* r1 = new RoamingDemon("Demon 1", 2, 20, false, 1, Point2D(10, 12));
+    RoamingDemon* r1 = new RoamingDemon("Demon 1", 2, 20, false, 1.0, Point2D(10, 12));
     RoamingDemon* r2 = new RoamingDemon("Demon 2", 2, 20, false, 2, Point2D(15, 5));
 
     // Put the RoamingDemons in objects_ptrs
@@ -110,6 +110,21 @@ bool Model::Update() {
     bool returnedTrue = false;
     bool gameOverHideouts = true;
     bool gameOverMages = true;
+
+    // Check for roaming demons following mages
+    for (int i = 0; i < num_roamingdemon; i++) {
+    for (int j = 0; j < num_mages; j++) {
+
+        double dist = GetDistanceBetween(
+            roamingdemon_ptrs[i]->GetLocation(),
+            mage_ptrs[j]->GetLocation()
+        );
+
+        if (dist < 4) {
+            roamingdemon_ptrs[i]->follow(mage_ptrs[j]);
+        }
+    }
+}
 
     // Iterate through the object_ptrs array and call their update function
     for (int i = 0; i < num_objects; i++) {

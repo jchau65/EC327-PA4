@@ -168,6 +168,7 @@
                 "Model.cpp",
                 "View.cpp",
                 "GameCommand.cpp",
+                "RoamingDemon.cpp",
                 "main.cpp",
                 "-o",
                 "${fileDirname}\\main.exe"
