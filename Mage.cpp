@@ -4,14 +4,15 @@
 #include <random>
 
 #include "Mage.h"
+#include "RoamingDemon.h"
 
 using namespace std;
 
-Mage::Mage() : GameObject('M'), speed(5), mana(20), experience(0), gold_pieces(0) {
+Mage::Mage() : GameObject('M'), speed(5), mana(20), experience(0), gold_pieces(0), current_roaming_demon(nullptr) {
     cout << "Mage default constructed." << endl;
 }
 
-Mage::Mage(const char in_code) : GameObject(in_code), speed(5), mana(20), experience(0), gold_pieces(0) {
+Mage::Mage(const char in_code) : GameObject(in_code), speed(5), mana(20), experience(0), gold_pieces(0), current_roaming_demon(nullptr) {
     this->state = STOPPED;
     cout << "Mage constructed." << endl;
 }
@@ -22,7 +23,8 @@ Mage::Mage(const string in_name, const int in_id, const char in_code, const unsi
     name(in_name),
     mana(20),
     experience(0),
-    gold_pieces(0)
+    gold_pieces(0),
+    current_roaming_demon(nullptr)
 {
     cout << "Mage constructed." << endl;
 }
@@ -209,7 +211,7 @@ void Mage::Stop() {
 }
 
 bool Mage::IsKnockedOut() const {
-    return (mana == 0);
+    return (mana <= 0);
 }
 
 bool Mage::ShouldBeVisible() const {
@@ -282,7 +284,9 @@ bool Mage::Update() {
         case MOVING:
             // Checks if the mage has arrived
             if (UpdateLocation()) {
-                state = STOPPED;
+                if (state != KNOCKED_OUT) { 
+                    state = STOPPED;
+                }
                 return true;
             }
             return false;
@@ -354,6 +358,9 @@ bool Mage::Update() {
             // Set state to at spire after mana is recovered
             state = AT_SPIRE;
             return true;
+
+        case KNOCKED_OUT:
+            return false;
     }
     return false;
 }
@@ -373,6 +380,11 @@ bool Mage::UpdateLocation() {
         mana -= 1;
         gold_pieces += GetRandomAmountOfGP();
 
+        // If there is a RoamingDemon following, reduce mana even further
+        if (current_roaming_demon != nullptr) {
+            mana -= current_roaming_demon->get_attack();
+        }
+
         // If location is within one step of location
         if (fabs((destination - location).x) <= fabs(delta.x) && 
             fabs((destination - location).y) <= fabs(delta.y)) 
@@ -391,7 +403,7 @@ bool Mage::UpdateLocation() {
     }
 
     // Else, don't move mage
-    else if (mana == 0) {
+    else if (mana <= 0) {
         cout << name << " is out of mana and can't move" << endl;
         state = KNOCKED_OUT;
         return true;
@@ -412,6 +424,10 @@ void Mage::SetupDestination(const Point2D& dest) {
     else {
         delta = Vector2D();
     }
+}
+
+void Mage::Followed(RoamingDemon* demon) {
+    this->current_roaming_demon = demon;
 }
 
 double GetRandomAmountOfGP() {

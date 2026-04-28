@@ -2,7 +2,8 @@
 #define ROAMINGDEMON_H
 
 #include "GameObject.h"
-#include "Mage.h"
+
+class Mage;
 
 #include <iostream>
 #include <string>

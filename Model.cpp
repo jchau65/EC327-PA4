@@ -44,7 +44,7 @@ Model::Model() : time(0), num_objects(8), num_mages(2), num_spires(2), num_hideo
 
     // Create new RoamingDemons
     RoamingDemon* r1 = new RoamingDemon("Demon 1", 2, 20, false, 1.0, Point2D(10, 12));
-    RoamingDemon* r2 = new RoamingDemon("Demon 2", 2, 20, false, 2, Point2D(15, 5));
+    RoamingDemon* r2 = new RoamingDemon("Demon 2", 10, 20, false, 2, Point2D(4, 5));
 
     // Put the RoamingDemons in objects_ptrs
     object_ptrs[6] = r1;

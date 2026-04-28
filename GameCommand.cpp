@@ -4,8 +4,6 @@
 
 using namespace std;
 
-extern bool quit = false;
-
 void DoMoveCommand(Model& model, const int mage_id, Point2D& p1) {
     // Get the mage ptr
     Mage* mage = model.GetMagePtr(mage_id);

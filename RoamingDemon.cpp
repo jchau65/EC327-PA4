@@ -1,4 +1,5 @@
 #include "RoamingDemon.h"
+#include "Mage.h"
 
 #include <random>
 
@@ -38,12 +39,19 @@ bool RoamingDemon::Update() {
     // Update state and return true if Roaming Demon is dead
     if (!IsAlive()) {
         state = DEAD;
+        display_code = 'w';
         return true;
     }
 
     // Update state and return true if Roaming Demon is following a mage
     if (current_mage != nullptr) {
         state = IN_HUNT;
+
+        // Reduce health by attack (higher attack -> shorter lifespan)
+        health -= attack;
+
+        // Follow mage
+        location = current_mage->GetLocation();
         return true;
     }
 

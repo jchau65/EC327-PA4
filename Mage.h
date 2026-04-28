@@ -7,6 +7,8 @@
 #include "ManaSpire.h"
 #include "DemonHideout.h"
 
+class RoamingDemon;
+
 using namespace std;
 
 /// Enumerated object for all the states for a mage.
@@ -37,6 +39,7 @@ class Mage : public GameObject {
         DemonHideout* current_hideout; // A pointer to the current DemonHideout
         Point2D destination; // This object's current destination coordinates in the real plane.
         Vector2D delta; // Contains the x and y amounts that the object will move on each time unit.
+        RoamingDemon* current_roaming_demon; // Determines whether or not the Mage is being followed by a RoamingDemon
 
     public:
         /**
@@ -213,6 +216,11 @@ class Mage : public GameObject {
          * delta = (destination - location) * (speed / GetDistanceBetween(destination, location))
          */
         void SetupDestination(const Point2D& dest);
+
+        /**
+         * Sets the pointer to the RoamingDemon that is following this mage.
+         */
+        void Followed(RoamingDemon* demon); 
 };
 
 /**
