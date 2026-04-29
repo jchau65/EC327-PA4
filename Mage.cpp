@@ -2,28 +2,45 @@
 #include <string>
 #include <math.h>
 #include <random>
+#include <fstream>
 
 #include "Mage.h"
 #include "RoamingDemon.h"
+#include "Input_Handling.h"
+#include "Model.h"
 
 using namespace std;
 
-Mage::Mage() : GameObject('M'), speed(5), mana(20), experience(0), gold_pieces(0), current_roaming_demon(nullptr) {
+Mage::Mage() :
+    GameObject('M'),
+    speed(5), is_at_spire(false), is_in_hideout(false),
+    mana(20), experience(0), gold_pieces(0),
+    battles_to_buy(0), crystals_to_buy(0),
+    current_spire(nullptr), current_hideout(nullptr),
+    current_roaming_demon(nullptr)
+{
     cout << "Mage default constructed." << endl;
 }
 
-Mage::Mage(const char in_code) : GameObject(in_code), speed(5), mana(20), experience(0), gold_pieces(0), current_roaming_demon(nullptr) {
+Mage::Mage(const char in_code) :
+    GameObject(in_code),
+    speed(5), is_at_spire(false), is_in_hideout(false),
+    mana(20), experience(0), gold_pieces(0),
+    battles_to_buy(0), crystals_to_buy(0),
+    current_spire(nullptr), current_hideout(nullptr),
+    current_roaming_demon(nullptr)
+{
     this->state = STOPPED;
     cout << "Mage constructed." << endl;
 }
 
-Mage::Mage(const string in_name, const int in_id, const char in_code, const unsigned int in_speed, const Point2D& in_loc) : 
+Mage::Mage(const string in_name, const int in_id, const char in_code, const unsigned int in_speed, const Point2D& in_loc) :
     GameObject(in_loc, in_id, in_code),
-    speed(in_speed),
+    speed(in_speed), is_at_spire(false), is_in_hideout(false),
     name(in_name),
-    mana(20),
-    experience(0),
-    gold_pieces(0),
+    mana(20), experience(0), gold_pieces(0),
+    battles_to_buy(0), crystals_to_buy(0),
+    current_spire(nullptr), current_hideout(nullptr),
     current_roaming_demon(nullptr)
 {
     cout << "Mage constructed." << endl;
@@ -43,12 +60,12 @@ void Mage::StartMoving(const Point2D& dest) {
     // If this Mage already at the destination run this bit
     Point2D currentLocation = GetLocation();
     if (currentLocation.x == dest.x && currentLocation.y == dest.y) {
-        cout << display_code << id_num << ": I'm already there. See?" << endl;
+        throw Invalid_Input(name + " is already at this spot.");
     }
 
     // If this Mage is knocked out run this bit
     else if (IsKnockedOut()) {
-        cout << display_code << id_num << ": I am knocked out. I may move but you cannot see me." << endl;
+        throw Invalid_Input(name + " is knocked out!");
     }
 
     // Otherwise
@@ -84,12 +101,12 @@ void Mage::StartMovingToHideout(DemonHideout* hideout) {
 
     // If this Mage is knocked out run this bit
     if (IsKnockedOut()) {
-        cout << display_code << id_num << ": I am knocked out so I can't move to hideout..." << endl;
+        throw Invalid_Input(name + " is knocked out!");
     }
     
     // If this Mage is already at destination run this bit
     else if (GetLocation().x == dest.x && GetLocation().y == dest.y) {
-        cout << display_code << id_num << ": I am already at the Demon Hideout!" << endl;
+        throw Invalid_Input(name + " is already at the hideout.");
     }
 
     // Otherwise
@@ -123,12 +140,12 @@ void Mage::StartMovingToSpire(ManaSpire* spire) {
 
     // If this Mage has lost all mana run this bit
     if (IsKnockedOut()) {
-        cout << display_code << id_num << ": I am knocked out so I should have gone to the spire..." << endl;
+        throw Invalid_Input(name + " is knocked out!");
     }
 
     // If the Mage is already there, run this bit
     else if (GetLocation().x == dest.x && GetLocation().y == dest.y) {
-        cout << display_code << id_num << ": I am already at the Spire!" << endl;
+        throw Invalid_Input(name + " is already at the spire.");
     }
 
     // Otherwise, general case
@@ -142,22 +159,22 @@ void Mage::StartMovingToSpire(ManaSpire* spire) {
 void Mage::StartBattling(const unsigned int num_battles) {
     // if Mage is out of mana
     if (IsKnockedOut()) {
-        cout << display_code << id_num << ": I'm knocked out and out of mana so no more battles for me..." << endl;
+        throw Invalid_Input(name + " is knocked out!");
     }
 
     // If Mage is not in a hideout
     else if (!is_in_hideout) {
-        cout << display_code << id_num << ": I can only battle in a Demon Hideout!" << endl;
+        throw Invalid_Input(name + " is not in a hideout.");
     }
 
     // If Mage cannot afford battle
     else if (current_hideout->GetGoldCost(num_battles) > gold_pieces) {
-        cout << display_code << id_num << ": Not enough money for battles" << endl;
+        throw Invalid_Input(name + " does not have enough gold.");
     }
 
     // If the currrent hideout is done
     else if (current_hideout->GetNumBattlesRemaining() == 0) {
-        cout << display_code << id_num << ": Cannot battle! This Demon Hideout has no more mages to battle!" << endl;
+        throw Invalid_Input("Hideout " + to_string(current_hideout->GetId()) + " has already been cleared.");
     }
 
     // Otherwise, general case
@@ -177,17 +194,17 @@ void Mage::StartBattling(const unsigned int num_battles) {
 void Mage::StartRecoveringMana(const unsigned int num_crystals) {
     // If the mage does not have enough gold
     if (!current_spire->CanAffordCrystal(num_crystals, gold_pieces)) {
-        cout << display_code << id_num << ": Not enough money to recover mana." << endl;
+        throw Invalid_Input(name + " does not have enough money.");
     }
 
     // If the Mana Spire is out of crystals
     else if (!current_spire->HasCrystals()) {
-        cout << display_code << id_num << ": Cannot recover! No crystal remaining in this Mana Spire" << endl;
+        throw Invalid_Input("Spire " + to_string(current_spire->GetId()) + " is out of crystals.");
     }
 
     // If the mage is not at a Mana Spire
     else if (!is_at_spire) {
-        cout << display_code << id_num << ": I can only recover mana at a Mana Spire" << endl;
+        throw Invalid_Input(name + " is not at a spire.");
     }
 
     // Otherwise, general case
@@ -324,7 +341,11 @@ bool Mage::Update() {
         // If the mage is battling in a hideout
         case BATTLING_IN_HIDEOUT:
             // Reduce mana
-            mana -= current_hideout->GetManaCost(battles_to_buy);
+            if (current_hideout->GetManaCost(battles_to_buy) <= mana) {
+                mana -= current_hideout->GetManaCost(battles_to_buy);
+            } else {
+                mana = 0;
+            }
 
             // Reduce gold
             gold_pieces -= current_hideout->GetGoldCost(battles_to_buy);
@@ -374,42 +395,42 @@ Mage::~Mage() {
 }
 
 bool Mage::UpdateLocation() {
-    // If mage has enough mana
-    if (!IsKnockedOut()) {
-        // Reduce mana and increase gold
-        mana -= 1;
-        gold_pieces += GetRandomAmountOfGP();
-
-        // If there is a RoamingDemon following, reduce mana even further
-        if (current_roaming_demon != nullptr) {
-            mana -= current_roaming_demon->get_attack();
-        }
-
-        // If location is within one step of location
-        if (fabs((destination - location).x) <= fabs(delta.x) && 
-            fabs((destination - location).y) <= fabs(delta.y)) 
-        {
-            location = destination;
-            cout << display_code << id_num << ": Arrived at destination." << endl;
-            return true;
-        }
-
-        // Otherwise, take a normal step
-        else {
-            location = location + delta;
-            cout << display_code << id_num << ": Moved to " << location << endl;
-            return false;
-        }
-    }
-
-    // Else, don't move mage
-    else if (mana <= 0) {
+    if (IsKnockedOut()) {
         cout << name << " is out of mana and can't move" << endl;
         state = KNOCKED_OUT;
         return true;
     }
 
-    return false;
+    mana -= 1;
+    gold_pieces += GetRandomAmountOfGP();
+
+    if (current_roaming_demon != nullptr) {
+        if (current_roaming_demon->get_attack() <= mana) {
+            mana -= current_roaming_demon->get_attack();
+        } else {
+            mana = 0;
+        }
+    }
+
+    // Check AGAIN after decrementing
+    if (IsKnockedOut()) {
+        cout << name << " is out of mana and can't move" << endl;
+        state = KNOCKED_OUT;
+        return true;
+    }
+
+    if (fabs((destination - location).x) <= fabs(delta.x) && 
+        fabs((destination - location).y) <= fabs(delta.y)) 
+    {
+        location = destination;
+        cout << display_code << id_num << ": Arrived at destination." << endl;
+        return true;
+    }
+    else {
+        location = location + delta;
+        cout << display_code << id_num << ": Moved to " << location << endl;
+        return false;
+    }
 }
 
 void Mage::SetupDestination(const Point2D& dest) {
@@ -444,4 +465,47 @@ double GetRandomAmountOfGP() {
 
     // Generate double
     return dis(gen);
+}
+
+void Mage::save(ofstream& file) {
+    GameObject::save(file);
+    file << speed << "\n";
+    file << (int)is_at_spire << "\n";
+    file << (int)is_in_hideout << "\n";
+    file << mana << "\n";
+    file << experience << "\n";
+    file << gold_pieces << "\n";
+    file << battles_to_buy << "\n";
+    file << crystals_to_buy << "\n";
+    // name: length on one line, name on the next (handles spaces)
+    file << name.size() << "\n" << name << "\n";
+    // pointer fields saved as id (-1 if null)
+    file << (current_spire  ? current_spire->GetId()  : -1) << "\n";
+    file << (current_hideout ? current_hideout->GetId() : -1) << "\n";
+    file << destination.x << "\n" << destination.y << "\n";
+    file << delta.x << "\n" << delta.y << "\n";
+    file << (current_roaming_demon ? current_roaming_demon->GetId() : -1) << "\n";
+}
+
+void Mage::restore(ifstream& file, Model& model) {
+    GameObject::restore(file, model);
+    file >> speed;
+    int iat, iih;
+    file >> iat >> iih;
+    is_at_spire = iat; is_in_hideout = iih;
+    file >> mana >> experience >> gold_pieces >> battles_to_buy >> crystals_to_buy;
+    // restore name
+    size_t len; file >> len; file.ignore();
+    name.resize(len);
+    if (len > 0) file.read(&name[0], len);
+    file.ignore(); // skip trailing newline
+    // restore pointers
+    int spire_id, hideout_id, demon_id;
+    file >> spire_id >> hideout_id;
+    current_spire   = (spire_id   == -1) ? nullptr : model.GetManaSpirePtr(spire_id);
+    current_hideout = (hideout_id == -1) ? nullptr : model.GetDemonHideoutPtr(hideout_id);
+    file >> destination.x >> destination.y;
+    file >> delta.x >> delta.y;
+    file >> demon_id;
+    current_roaming_demon = (demon_id == -1) ? nullptr : model.GetRoamingDemonPtr(demon_id);
 }

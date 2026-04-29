@@ -87,3 +87,15 @@ void ManaSpire::ShowStatus() const {
 ManaSpire::~ManaSpire() {
     cout << "ManaSpire destructed." << endl;
 }
+
+void ManaSpire::save(ofstream& file) {
+    Building::save(file);
+    file << crystal_capacity << "\n";
+    file << num_crystals_remaining << "\n";
+    file << cost_per_crystal << "\n";
+}
+
+void ManaSpire::restore(ifstream& file, Model& model) {
+    Building::restore(file, model);
+    file >> crystal_capacity >> num_crystals_remaining >> cost_per_crystal;
+}

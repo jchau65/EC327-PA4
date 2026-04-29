@@ -128,6 +128,9 @@ class DemonHideout : public Building {
          * Destructor for DemonHideout. Outputs the message "DemonHideout destructed."
          */
         ~DemonHideout();
+
+        void save(ofstream& file) override;
+        void restore(ifstream& file, Model& model) override;
 };
 
 #endif

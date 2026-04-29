@@ -100,3 +100,18 @@ void DemonHideout::ShowStatus() const {
 DemonHideout::~DemonHideout() {
     cout << "DemonHideout destructed." << endl;
 }
+
+void DemonHideout::save(ofstream& file) {
+    Building::save(file);
+    file << num_battle_remaining << "\n";
+    file << max_number_of_battles << "\n";
+    file << mana_cost_per_battle << "\n";
+    file << gold_cost_per_battle << "\n";
+    file << experience_per_battle << "\n";
+}
+
+void DemonHideout::restore(ifstream& file, Model& model) {
+    Building::restore(file, model);
+    file >> num_battle_remaining >> max_number_of_battles
+         >> mana_cost_per_battle >> gold_cost_per_battle >> experience_per_battle;
+}

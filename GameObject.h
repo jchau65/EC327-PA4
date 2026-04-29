@@ -1,7 +1,10 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include <fstream>
 #include "Point2D.h"
+
+class Model;
 
 /**
  * @brief
@@ -81,6 +84,9 @@ class GameObject {
         virtual ~GameObject();
 
         void DrawSelf(char* ptr);
+
+        virtual void save(ofstream& file);
+        virtual void restore(ifstream& file, Model& model);
 };
 
 #endif

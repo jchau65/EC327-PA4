@@ -1,7 +1,10 @@
 #ifndef BUILDING_H
 #define BUILDING_H
 
+#include <fstream>
 #include "GameObject.h"
+
+class Model;
 
 /**
  * @brief
@@ -52,6 +55,9 @@ class Building : public GameObject {
          * @brief Returns true because buildings are always visible.
          */
         bool ShouldBeVisible() const;
+
+        void save(ofstream& file) override;
+        void restore(ifstream& file, Model& model) override;
 };
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <list>
+#include <fstream>
 #include "ManaSpire.h"
 #include "DemonHideout.h"
 #include "Mage.h"
@@ -9,39 +11,37 @@
 
 class Model {
     private:
-        int time; // The simulation time.
-        GameObject* object_ptrs[10]; // Array to store pointers to objects
-        int num_objects; // Number of objects
-        Mage* mage_ptrs[10]; // Array to store pointers to Mages
-        int num_mages; // Number of mages
-        ManaSpire* spire_ptrs[10]; // Array to store pointers to ManaSpires
-        int num_spires; // Number of spires
-        DemonHideout* hideout_ptrs[10]; // Array to store pointers to DemonHideouts
-        int num_hideouts; // Number of hidesouts
-        RoamingDemon* roamingdemon_ptrs[10];
-        int num_roamingdemon;
+        int time;
+        list<GameObject*> object_ptrs;    // All created objects (for status and deletion)
+        list<GameObject*> active_ptrs;    // Living objects (updated and displayed)
+        list<Mage*> mage_ptrs;
+        list<ManaSpire*> spire_ptrs;
+        list<DemonHideout*> hideout_ptrs;
+        list<RoamingDemon*> roamingdemon_ptrs;
 
     public:
         /**
          * Default constructor for Model.
-         * 
+         *
          * Initializes the time to 0 and then creates new objects in the heap using new as follows:
-         * - Mage 1 (5, 1), object_ptrs[0], mage_ptrs[0]
-         * - Mage 2 (10, 1), object_ptrs[1], mage_ptrs[1]
-         * - ManaSpire 1 (1, 20), object_ptrs[2], spire_ptrs[0]
-         * - ManaSpire 2 (10, 20), object_ptrs[3], spire_ptrs[1]
-         * - DemonHideout 1 (0, 0), object_ptrs[4], hideout_ptrs[0]
-         * - DemonHideout 2 (5, 5,), object_ptrs[5], hideout_ptrs[1]
-         * 
-         * Also sets num_objects to 6, num_mages to 2, num_spires to 2, and num_hideouts to 2.
+         * - Mage 1 (5, 1), object_ptrs front, mage_ptrs front
+         * - Mage 2 (10, 1)
+         * - ManaSpire 1 (1, 20)
+         * - ManaSpire 2 (10, 20)
+         * - DemonHideout 1 (0, 0)
+         * - DemonHideout 2 (5, 5)
+         * - RoamingDemon 1 (10, 12)
+         * - RoamingDemon 2 (15, 5)
+         *
+         * All objects are added to object_ptrs and active_ptrs.
          * Finally, outputs a message "Model default constructed."
          */
         Model();
 
         /**
          * Destructor for Model.
-         * 
-         * Deletes each object and outputs a message "Model destructed."
+         *
+         * Deletes each object in object_ptrs and outputs a message "Model destructed."
          */
         ~Model();
 
@@ -66,27 +66,41 @@ class Model {
         RoamingDemon* GetRoamingDemonPtr(const int id);
 
         /**
-         * Updates every object in the Model.
-         * 
-         * If the player finishes the DemonHideouts the game should print "GAME OVER! You win!"
-         * 
-         * The game should then exit.
-         * 
-         * @return True if any one of the objects returns true.
+         * Updates every object in active_ptrs, removes dead objects from active_ptrs,
+         * and checks win/loss conditions.
+         *
+         * @return True if any one of the objects returns true from Update().
          */
         bool Update();
 
         /**
-         * Provides a serive to the main program. 
-         * 
-         * Outputs the time, and generates the view display for all of the GameObjects.
+         * Clears the view, plots all objects in active_ptrs, and draws.
          */
         void Display(View& view);
 
         /**
-         * Outputs the time and status of all the GameObjects by calling their ShowStatus() function.
+         * Outputs the time and status of all objects in object_ptrs.
          */
         void ShowStatus();
+
+        /**
+         * Reads TYPE, ID, X, Y from cin and creates a new object of the given type at (X, Y)
+         * with the given ID, then adds it to the appropriate lists.
+         * TYPE: g=Mage, s=ManaSpire, d=DemonHideout, o=RoamingDemon
+         * Throws Invalid_Input for unknown TYPE, bad numeric input, or duplicate ID within a type group.
+         */
+        void NewCommand();
+
+        /**
+         * Writes time, catalog (count + type+id per active object), then each object's data.
+         */
+        void save(ofstream& file);
+
+        /**
+         * Deletes all existing objects, reads time and catalog from file to recreate objects,
+         * then calls restore on each. Throws Invalid_Input if the file cannot be opened.
+         */
+        void restore(ifstream& file);
 };
 
 #endif

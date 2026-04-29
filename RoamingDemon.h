@@ -1,12 +1,14 @@
 #ifndef ROAMINGDEMON_H
 #define ROAMINGDEMON_H
 
+#include <iostream>
+#include <string>
+#include <fstream>
+
 #include "GameObject.h"
 
 class Mage;
-
-#include <iostream>
-#include <string>
+class Model;
 
 using namespace std;
 
@@ -86,6 +88,9 @@ class RoamingDemon : public GameObject {
          * @return If this RoamingDemon should be visible
          */
         bool ShouldBeVisible() const override;
+
+        void save(ofstream& file) override;
+        void restore(ifstream& file, Model& model) override;
 };
 
 #endif

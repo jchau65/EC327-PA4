@@ -108,6 +108,9 @@ class ManaSpire : public Building {
          * Destructor for ManaSpire. Outputs the message "ManaSpire destructed."
          */
         ~ManaSpire();
+
+        void save(ofstream& file) override;
+        void restore(ifstream& file, Model& model) override;
 };
 
 #endif

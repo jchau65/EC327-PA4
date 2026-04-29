@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "Point2D.h"
 #include "GameObject.h"
@@ -34,4 +35,18 @@ GameObject::~GameObject() {
 void GameObject::DrawSelf(char* ptr) {
     ptr[0] = display_code;
     ptr[1] = '0' + id_num;
+}
+
+void GameObject::save(ofstream& file) {
+    file << location.x << "\n" << location.y << "\n";
+    file << id_num << "\n";
+    file << display_code << "\n";
+    file << (int)state << "\n";
+}
+
+void GameObject::restore(ifstream& file, Model& /*model*/) {
+    file >> location.x >> location.y;
+    file >> id_num;
+    file >> display_code;
+    int s; file >> s; state = (char)s;
 }

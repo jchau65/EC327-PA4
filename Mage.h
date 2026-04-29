@@ -2,12 +2,14 @@
 #define MAGE_H
 
 #include <string>
+#include <fstream>
 
 #include "GameObject.h"
 #include "ManaSpire.h"
 #include "DemonHideout.h"
 
 class RoamingDemon;
+class Model;
 
 using namespace std;
 
@@ -190,6 +192,14 @@ class Mage : public GameObject {
          */
         virtual ~Mage();
 
+        void save(ofstream& file) override;
+        void restore(ifstream& file, Model& model) override;
+
+        /**
+         * Sets the pointer to the RoamingDemon that is following this mage.
+         */
+        void Followed(RoamingDemon* demon);
+
     protected:
         /**
          * Updates the object's location while it is moving.
@@ -217,10 +227,6 @@ class Mage : public GameObject {
          */
         void SetupDestination(const Point2D& dest);
 
-        /**
-         * Sets the pointer to the RoamingDemon that is following this mage.
-         */
-        void Followed(RoamingDemon* demon); 
 };
 
 /**
