@@ -129,7 +129,23 @@ class DemonHideout : public Building {
          */
         ~DemonHideout();
 
+        /**
+         * @brief Calls Building::save(), then writes num_battle_remaining,
+         * max_number_of_battles, mana_cost_per_battle, gold_cost_per_battle,
+         * and experience_per_battle to the file.
+         *
+         * @param file Open output file stream to write to.
+         */
         void save(ofstream& file) override;
+
+        /**
+         * @brief Calls Building::restore(), then reads num_battle_remaining,
+         * max_number_of_battles, mana_cost_per_battle, gold_cost_per_battle,
+         * and experience_per_battle from the file.
+         *
+         * @param file  Open input file stream to read from.
+         * @param model Reference to the Model (passed through to satisfy the virtual signature).
+         */
         void restore(ifstream& file, Model& model) override;
 };
 

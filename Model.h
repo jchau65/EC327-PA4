@@ -84,21 +84,47 @@ class Model {
         void ShowStatus();
 
         /**
-         * Reads TYPE, ID, X, Y from cin and creates a new object of the given type at (X, Y)
-         * with the given ID, then adds it to the appropriate lists.
-         * TYPE: g=Mage, s=ManaSpire, d=DemonHideout, o=RoamingDemon
-         * Throws Invalid_Input for unknown TYPE, bad numeric input, or duplicate ID within a type group.
+         * @brief Reads TYPE, ID, X, Y from cin and dynamically creates a new game object
+         * of the requested type at location (X, Y) with the given ID, adding it to
+         * object_ptrs, active_ptrs, and the appropriate type-specific list.
+         *
+         * TYPE codes: g = Mage, s = ManaSpire, d = DemonHideout, o = RoamingDemon.
+         *
+         * Throws Invalid_Input if: TYPE is unrecognized, any numeric input is invalid,
+         * or an object with the same ID already exists within the same type group.
          */
         void NewCommand();
 
         /**
-         * Writes time, catalog (count + type+id per active object), then each object's data.
+         * @brief Saves the current game state to the given file.
+         *
+         * Writes, in order:
+         *   1. The current simulation time.
+         *   2. The catalog: count of active objects, followed by one type-code and id
+         *      per active object (type codes: g/s/d/o matching NewCommand).
+         *   3. The full member-variable data of every active object, in the same order,
+         *      by calling each object's save() function.
+         *
+         * Only active (living) objects are saved; dead objects are omitted.
+         *
+         * @param file Open output file stream to write the save data to.
          */
         void save(ofstream& file);
 
         /**
-         * Deletes all existing objects, reads time and catalog from file to recreate objects,
-         * then calls restore on each. Throws Invalid_Input if the file cannot be opened.
+         * @brief Restores game state from the given file, replacing all current objects.
+         *
+         * Steps:
+         *   1. Deletes every existing object and clears all pointer lists.
+         *   2. Reads the simulation time from the file.
+         *   3. Reads the catalog and creates skeleton objects of the correct types and
+         *      IDs (constructors fire here, producing their usual output messages).
+         *   4. Calls restore() on each object in catalog order to fill in full state;
+         *      cross-object pointer fields are resolved via the Get*Ptr() functions,
+         *      which work correctly because all skeletons are created before any
+         *      restore() call begins.
+         *
+         * @param file Open input file stream to read the save data from.
          */
         void restore(ifstream& file);
 };

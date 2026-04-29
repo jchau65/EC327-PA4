@@ -56,7 +56,19 @@ class Building : public GameObject {
          */
         bool ShouldBeVisible() const;
 
+        /**
+         * @brief Calls GameObject::save(), then writes mage_count to the file.
+         *
+         * @param file Open output file stream to write to.
+         */
         void save(ofstream& file) override;
+
+        /**
+         * @brief Calls GameObject::restore(), then reads mage_count from the file.
+         *
+         * @param file  Open input file stream to read from.
+         * @param model Reference to the Model (passed through to satisfy the virtual signature).
+         */
         void restore(ifstream& file, Model& model) override;
 };
 

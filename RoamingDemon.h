@@ -89,7 +89,25 @@ class RoamingDemon : public GameObject {
          */
         bool ShouldBeVisible() const override;
 
+        /**
+         * @brief Calls GameObject::save(), then writes attack, health, variant,
+         * in_combat, name (length then characters), and current_mage id to the file.
+         * current_mage is saved as the Mage's id_num, or -1 if null.
+         *
+         * @param file Open output file stream to write to.
+         */
         void save(ofstream& file) override;
+
+        /**
+         * @brief Calls GameObject::restore(), then reads attack, health, variant,
+         * in_combat, name, and current_mage id from the file in the same order as
+         * save(). The saved mage id is resolved back to a live Mage pointer via
+         * model.GetMagePtr(); a saved id of -1 restores current_mage to nullptr.
+         *
+         * @param file  Open input file stream to read from.
+         * @param model Reference to the Model used to look up the followed Mage
+         *              by its saved id number.
+         */
         void restore(ifstream& file, Model& model) override;
 };
 

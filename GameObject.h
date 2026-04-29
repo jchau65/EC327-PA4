@@ -85,7 +85,25 @@ class GameObject {
 
         void DrawSelf(char* ptr);
 
+        /**
+         * @brief Writes this object's base member variables to the file in order:
+         * location.x, location.y, id_num, display_code, state.
+         * Subclasses should call this first, then write their own members.
+         *
+         * @param file Open output file stream to write to.
+         */
         virtual void save(ofstream& file);
+
+        /**
+         * @brief Reads this object's base member variables from the file in the same
+         * order they were written by save(): location.x, location.y, id_num,
+         * display_code, state.
+         * Subclasses should call this first, then read their own members.
+         *
+         * @param file  Open input file stream to read from.
+         * @param model Reference to the Model, passed through so subclasses can
+         *              resolve saved ID numbers back into live object pointers.
+         */
         virtual void restore(ifstream& file, Model& model);
 };
 

@@ -192,11 +192,36 @@ class Mage : public GameObject {
          */
         virtual ~Mage();
 
+        /**
+         * @brief Calls GameObject::save(), then writes all Mage member variables
+         * to the file in order: speed, is_at_spire, is_in_hideout, mana, experience,
+         * gold_pieces, battles_to_buy, crystals_to_buy, name (length then characters),
+         * current_spire id, current_hideout id, destination.x, destination.y,
+         * delta.x, delta.y, current_roaming_demon id.
+         * Pointer fields are saved as the pointed-to object's id_num, or -1 if null.
+         *
+         * @param file Open output file stream to write to.
+         */
         void save(ofstream& file) override;
+
+        /**
+         * @brief Calls GameObject::restore(), then reads all Mage member variables
+         * from the file in the same order as save(). Saved id numbers for pointer
+         * fields are resolved back into live pointers via the model parameter.
+         * A saved id of -1 restores the pointer to nullptr.
+         *
+         * @param file  Open input file stream to read from.
+         * @param model Reference to the Model used to look up spire, hideout, and
+         *              roaming demon pointers by their saved id numbers.
+         */
         void restore(ifstream& file, Model& model) override;
 
         /**
-         * Sets the pointer to the RoamingDemon that is following this mage.
+         * @brief Records that a RoamingDemon has started following this Mage.
+         * Sets current_roaming_demon so that UpdateLocation() applies the demon's
+         * attack as an additional mana drain each movement step.
+         *
+         * @param demon Pointer to the RoamingDemon now following this Mage.
          */
         void Followed(RoamingDemon* demon);
 
